@@ -5,7 +5,7 @@ const h1 = document.querySelector('.weather-section');
 let currentAnimation = null;
 const WindowBackground
  = document.querySelector('.window-background');
-
+const BodyWall = document.querySelector('.body');
 // function to fetch el country
 
 const fetchCountry = function(country){
@@ -67,12 +67,21 @@ getGeoLocation().then(loc => {
     });
     const location = getGeoLocation();
 }).then(data => { console.log(data);
+        console.log(data.sys['country']);
+
   // Display the weather description in the h1 element
 
   getWeather(data[0]).then(weatherData => {
     console.log(weatherData.weather[0].description);
     h1.textContent = `Weather in ${data[0].name.common}: ${weatherData.weather[0].description}`;
     changeBackground(weatherData.weather[0].description);
+    fetchCountryImage(data.sys['country']).then(() => {
+        console.log(`Background image set for ${data[0].name.common}`);
+    }).catch(error => {
+        console.error(`Error setting background image for ${data[0].name.common}:`, error);
+    });
+  }).catch(error => {
+    console.error('Error fetching country img data:', error);   
   });
 })
 
@@ -122,3 +131,36 @@ function showCountryWeather() {
 // showCountryWeather();
 // setInterval(showCountryWeather, 2000); // every 2 seconds
 
+
+async function fetchCountryImage(country) {
+    const unsplashKey = 'MARVRHG3YjDgT2Y_1WH8M5tE6FMe-TLatyRcWcWaheg';
+    const countryFetch  = await fetch(`https://api.unsplash.com/search/photos?query=${country}&client_id=${unsplashKey}`);
+    const result = await countryFetch.json();
+        const imageUrl = result.results[0]?.urls?.regular;
+if (imageUrl) {
+        document.body.style.backgroundImage = `url('${imageUrl}')`;
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundPosition = "center";
+        document.body.style.backgroundRepeat = "no-repeat";
+    } else {
+        // fallback color if no image found
+        document.body.style.backgroundImage = "";
+        document.body.style.backgroundColor = "#e8b4b4";
+    }  console.log(result);
+}
+
+fetchCountryImage('Egypt')
+
+// implementing search function 
+const searchInput = document.querySelector('.search');
+const searchButton = document.querySelector('.search-button');
+
+searchInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const country = searchInput.value.trim();
+        if (country) {
+            fetchCountryImage(country);
+        }
+    }
+});

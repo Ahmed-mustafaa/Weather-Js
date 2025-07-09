@@ -1,13 +1,100 @@
 // awl haga select el section 34an t manipulate tel background
-    const apiKey = 'ed18d7d7a0869d03fbfb2f82a7db155b'
+const apiKey = 'ed18d7d7a0869d03fbfb2f82a7db155b'
 const animationContainer = document.getElementById('weatherAnimation');
 const h1 = document.querySelector('.weather-section');
 let currentAnimation = null;
-const WindowBackground
- = document.querySelector('.window-background');
+const WindowBackground= document.querySelector('.window-background');
 const BodyWall = document.querySelector('.body');
-// function to fetch el country
+const searchInput = document.getElementById("searchInput")
 
+const Button = document.getElementById("submit")
+
+const countryName = document.getElementById("country");
+const city = document.getElementById("city");
+const Temp = document.getElementById("temp");
+const condition = document.getElementById("weather-condition");
+
+Button.addEventListener('click',function(e){
+e.preventDefault()
+Search();
+})
+// function to fetch el country
+// getting user's current location
+const getGeoLocation = function() {
+  return new Promise((resolve, reject) => { 
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(position=>{
+            resolve({
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            })
+        }, error=>
+        {
+            console.error('Error getting geolocation:', error);
+            reject(error);
+        })
+    }
+});
+}
+
+getGeoLocation().then(loc => {
+  return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${loc.lat}&lon=${loc.lon}&appid=${apiKey}&units=metric`)
+    .then(response => {
+        if(response.ok){
+            return response.json();
+        }
+        throw new Error('Weather data not found');
+    }).catch(error => {
+        console.error('Error fetching weather:', error);
+        return Promise.reject(error);
+    });
+    //const location = getGeoLocation();
+}).then(data => { console.log(data);
+
+            countryName.textContent = data.sys['country']
+            city.textContent = data.name
+            Temp.textContent = `${(data.main['temp']).toFixed(1)}°C`
+            condition.textContent = data.weather[0]['description']
+        
+
+  // Display the weather description in the h1 element
+
+//   getWeather(data[0]).then(weatherData => {
+//     console.log(weatherData.weather[0].description);
+//     h1.textContent = `Weather in ${data[0].name.common}: ${weatherData.weather[0].description}`;
+//     changeBackground(weatherData.weather[0].description);
+//     fetchCountryImage(data.sys['country']).then(() => {
+//         console.log(`Background image set for ${data[0].name.common}`);
+//     }).catch(error => {
+//         console.error(`Error setting background image for ${data[0].name.common}:`, error);
+//     });
+//   }).catch(error => {
+//     console.error('Error fetching country img data:', error);   
+//   });
+ })
+const Search =  async function(){
+
+const query = searchInput.value.trim();
+if(!query) return // guard clause 
+  searchInput.value = "";
+try{
+
+const countryData = await fetchCountry(query);
+const lat = countryData[0].latlng[0];
+const lon = countryData[0].latlng[1];
+const weatherData = await getWeather(lat,lon);
+const weather =weatherData.weather[0].description
+SettingCountryData(query,weatherData.name,weatherData.main['temp'],weather)
+console.log(` From search ${query}:${weather}`);
+console.log(weatherData)
+}
+catch(err){
+console.error('Error searching for your input country:', err)
+}
+
+}
+console.log(`its ${Search()} is is is `)
+// fetching specific country ( elly rag3a mn search )
 const fetchCountry = function(country){
  return fetch((`https://restcountries.com/v3.1/name/${country}`))
  .then(response=>{
@@ -26,7 +113,7 @@ const fetchCountry = function(country){
 
 // function to fetch el weather by countryname 
 const getWeather= function(lat,lng){ 
-  return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}`)
+  return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`)
   .then(response => {
     if(response.ok){
         return response.json();
@@ -38,52 +125,7 @@ const getWeather= function(lat,lng){
   });
 }
 // getting user location 
-const getGeoLocation = function() {
-  return new Promise((resolve, reject) => { 
-    if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(position=>{
-            resolve({
-                lat: position.coords.latitude,
-                lon: position.coords.longitude
-            })
-        }, error=>
-        {
-            console.error('Error getting geolocation:', error);
-            reject(error);
-        })
-    }
-});
-}
-getGeoLocation().then(loc => {
-  return fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${loc.lat}&lon=${loc.lon}&appid=${apiKey}`)
-    .then(response => {
-        if(response.ok){
-            return response.json();
-        }
-        throw new Error('Weather data not found');
-    }).catch(error => {
-        console.error('Error fetching weather:', error);
-        return Promise.reject(error);
-    });
-    const location = getGeoLocation();
-}).then(data => { console.log(data);
-        console.log(data.sys['country']);
 
-  // Display the weather description in the h1 element
-
-  getWeather(data[0]).then(weatherData => {
-    console.log(weatherData.weather[0].description);
-    h1.textContent = `Weather in ${data[0].name.common}: ${weatherData.weather[0].description}`;
-    changeBackground(weatherData.weather[0].description);
-    fetchCountryImage(data.sys['country']).then(() => {
-        console.log(`Background image set for ${data[0].name.common}`);
-    }).catch(error => {
-        console.error(`Error setting background image for ${data[0].name.common}:`, error);
-    });
-  }).catch(error => {
-    console.error('Error fetching country img data:', error);   
-  });
-})
 
 // a function to change background based on weather condition
 const changeBackground = function(weatherState) {
@@ -137,30 +179,37 @@ async function fetchCountryImage(country) {
     const countryFetch  = await fetch(`https://api.unsplash.com/search/photos?query=${country}&client_id=${unsplashKey}`);
     const result = await countryFetch.json();
         const imageUrl = result.results[0]?.urls?.regular;
-if (imageUrl) {
-        document.body.style.backgroundImage = `url('${imageUrl}')`;
-        document.body.style.backgroundSize = "cover";
-        document.body.style.backgroundPosition = "center";
-        document.body.style.backgroundRepeat = "no-repeat";
-    } else {
-        // fallback color if no image found
-        document.body.style.backgroundImage = "";
-        document.body.style.backgroundColor = "#e8b4b4";
-    }  console.log(result);
-}
+// if (imageUrl) {
+//         BodyWall.style.backgroundImage = `url('${imageUrl}')`;
+//         BodyWall.style.backgroundSize = "cover";
+//         BodyWall.style.backgroundPosition = "center";
+//         BodyWall.style.backgroundRepeat = "no-repeat";
+//     } else {
+//         // fallback color if no image found
+//         document.body.style.backgroundImage = "";
+//         document.body.style.backgroundColor = "#e8b4b4";
+//     }  console.log(result);
+// /
+ }
 
-fetchCountryImage('Egypt')
+//fetchCountryImage('Egypt')
 
 // implementing search function 
-const searchInput = document.querySelector('.search');
-const searchButton = document.querySelector('.search-button');
 
-searchInput.addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        const country = searchInput.value.trim();
-        if (country) {
-            fetchCountryImage(country);
-        }
-    }
-});
+// searchInput.addEventListener('keypress', function(event) {
+//     if (event.key === 'Enter') {
+//         event.preventDefault();
+//         const country = searchInput.value.trim();
+//         if (country) {
+//             fetchCountryImage(country);
+//         }
+//     }
+// });
+
+
+const SettingCountryData = function(country,name,tempreature,desc){
+      countryName.textContent = country
+            city.textContent = name
+            Temp.textContent = tempreature
+            condition.textContent = desc
+}

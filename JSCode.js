@@ -12,7 +12,7 @@ const city = document.getElementById("city");
 const Temp = document.getElementById("temp");
 const condition = document.getElementById
 const favoriteBtn = document.querySelector('.favorite-btn');
-
+const countryCard = document.querySelector('.Country-card');
 const card1 = document.getElementById('card1');
 const card2 = document.getElementById('.card2');   
 const card3 = document.getElementById('.card3');   
@@ -23,8 +23,6 @@ Button.addEventListener('click',function(e){
 e.preventDefault()
 Search();
 })
-// function to fetch el country
-
 
 // getting user location 
 const getGeoLocation = function() {
@@ -57,18 +55,17 @@ getGeoLocation().then(loc => {
     });
     //const location = getGeoLocation();
 }).then(data => { console.log(data);
-
             countryName.textContent = data.sys['country']
             city.textContent = data.name
             Temp.textContent = `${(data.main['temp']).toFixed(1)}°C`
             condition.textContent = data.weather[0]['description']
-            // fetchCountryImage(data.sys['country']).then(() => {
-            //     console.log(`Background image set for ${data.sys['country']}`); 
-            // }).catch(error => {
-            //     console.error(`Error setting background image for ${data.sys['country']}:`, error);
-            // });
+          
             favoriteBtn.addEventListener('click',()=>{
 addTofav( countryName.textContent);
+fetchCountryImage(data.sys['country']).then(() => {
+    countryCard.style.backgroundImage = `url('${data.sys['country']}')`;
+    console.log(`Background image set for ${data.sys['country']}`);
+})
 console.log('Added to favorites:',  countryName.textContent);
 })
 
@@ -195,25 +192,31 @@ function showCountryWeather() {
 // setInterval(showCountryWeather, 2000); // every 2 seconds
 
 
-// async function fetchCountryImage(country) {
-//     const unsplashKey = 'MARVRHG3YjDgT2Y_1WH8M5tE6FMe-TLatyRcWcWaheg';
-//     const countryFetch  = await fetch(`https://api.unsplash.com/search/photos?query=${country}&client_id=${unsplashKey}`);
-//     const result = await countryFetch.json();
-//         const imageUrl = result.results[0]?.urls?.regular;
-// if (imageUrl) {
-//          BodyWall.style.backgroundImage = `url('${imageUrl}'`;
-//          BodyWall.style.backgroundSize = "cover";
-//          BodyWall.style.backgroundPosition = "center";
-//          BodyWall.style.backgroundRepeat = "no-repeat";
-//     } else {
-//         // fallback color if no image found
-//         BodyWall.style.backgroundImage = "";
-//         BodyWall.style.backgroundColor = "#333";
-//     }  console.log(result);
+ async function fetchCountryImage(country) {
+    const unsplashKey = 'MARVRHG3YjDgT2Y_1WH8M5tE6FMe-TLatyRcWcWaheg';
+    const countryFetch  = await fetch(`https://api.unsplash.com/search/photos?query=${country}&client_id=${unsplashKey}`);
+    const result = await countryFetch.json();
+        const imageUrl = result.results[0]?.urls?.regular;
+if (imageUrl) {
+        
+         document.body.style.backgroundImage = `url('${imageUrl}')`;
+           
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundPosition = "center";
+         document.body.style.backgroundRepeat = "no-repeat";
+         countryCard.style.backgroundSize = "cover";
+         countryCard.style.backgroundPosition = "center";
+         countryCard.style.backgroundRepeat = "no-repeat";
+         ountryCard.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+countryCard.style.backdropFilter = "blur(10px)";
+countryCard.style.webkitBackdropFilter = "blur(10px)";
+    } else {
+        // fallback color if no image found
+        countryCard.style.backgroundImage = "";
+        countryCard.styleBodyWall.style.backgroundColor = "#333";
+    }  console.log(result);
 
-//  }
-
-//fetchCountryImage('Egypt')
+ }
 
 
 const SettingCountryData = function(country,name,tempreature,desc){

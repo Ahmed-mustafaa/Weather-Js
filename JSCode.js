@@ -6,20 +6,27 @@ let currentAnimation = null;
 const WindowBackground= document.querySelector('.window-background');
 const BodyWall = document.querySelector('.body');
 const searchInput = document.getElementById("searchInput")
-
 const Button = document.getElementById("submit")
-
 const countryName = document.getElementById("country");
 const city = document.getElementById("city");
 const Temp = document.getElementById("temp");
-const condition = document.getElementById("weather-condition");
+const condition = document.getElementById
+const favoriteBtn = document.querySelector('.favorite-btn');
 
+const card1 = document.getElementById('card1');
+const card2 = document.getElementById('.card2');   
+const card3 = document.getElementById('.card3');   
+const card1Paragraph = card1.querySelector('p'); 
+let fetchedCountry = [];
+card1Paragraph.textContent = 'Weather in your country';
 Button.addEventListener('click',function(e){
 e.preventDefault()
 Search();
 })
 // function to fetch el country
-// getting user's current location
+
+
+// getting user location 
 const getGeoLocation = function() {
   return new Promise((resolve, reject) => { 
     if(navigator.geolocation){
@@ -55,7 +62,15 @@ getGeoLocation().then(loc => {
             city.textContent = data.name
             Temp.textContent = `${(data.main['temp']).toFixed(1)}°C`
             condition.textContent = data.weather[0]['description']
-        
+            // fetchCountryImage(data.sys['country']).then(() => {
+            //     console.log(`Background image set for ${data.sys['country']}`); 
+            // }).catch(error => {
+            //     console.error(`Error setting background image for ${data.sys['country']}:`, error);
+            // });
+            favoriteBtn.addEventListener('click',()=>{
+addTofav( countryName.textContent);
+console.log('Added to favorites:',  countryName.textContent);
+})
 
   // Display the weather description in the h1 element
 
@@ -72,13 +87,13 @@ getGeoLocation().then(loc => {
 //     console.error('Error fetching country img data:', error);   
 //   });
  })
-const Search =  async function(){
 
+ //implementing the search functionality
+const Search =  async function(){
 const query = searchInput.value.trim();
 if(!query) return // guard clause 
   searchInput.value = "";
 try{
-
 const countryData = await fetchCountry(query);
 const lat = countryData[0].latlng[0];
 const lon = countryData[0].latlng[1];
@@ -87,13 +102,20 @@ const weather =weatherData.weather[0].description
 SettingCountryData(query,weatherData.name,weatherData.main['temp'],weather)
 console.log(` From search ${query}:${weather}`);
 console.log(weatherData)
-}
+//addTofav(query)
+console.log(fetchedCountry);
+fetchCountryImage(query).then(() => {
+    console.log(`Background image set for ${query}`);       
+}).catch(error => {
+})}
 catch(err){
 console.error('Error searching for your input country:', err)
 }
 
 }
-console.log(`its ${Search()} is is is `)
+
+
+
 // fetching specific country ( elly rag3a mn search )
 const fetchCountry = function(country){
  return fetch((`https://restcountries.com/v3.1/name/${country}`))
@@ -124,7 +146,6 @@ const getWeather= function(lat,lng){
     return Promise.reject(error);
   });
 }
-// getting user location 
 
 
 // a function to change background based on weather condition
@@ -174,37 +195,25 @@ function showCountryWeather() {
 // setInterval(showCountryWeather, 2000); // every 2 seconds
 
 
-async function fetchCountryImage(country) {
-    const unsplashKey = 'MARVRHG3YjDgT2Y_1WH8M5tE6FMe-TLatyRcWcWaheg';
-    const countryFetch  = await fetch(`https://api.unsplash.com/search/photos?query=${country}&client_id=${unsplashKey}`);
-    const result = await countryFetch.json();
-        const imageUrl = result.results[0]?.urls?.regular;
+// async function fetchCountryImage(country) {
+//     const unsplashKey = 'MARVRHG3YjDgT2Y_1WH8M5tE6FMe-TLatyRcWcWaheg';
+//     const countryFetch  = await fetch(`https://api.unsplash.com/search/photos?query=${country}&client_id=${unsplashKey}`);
+//     const result = await countryFetch.json();
+//         const imageUrl = result.results[0]?.urls?.regular;
 // if (imageUrl) {
-//         BodyWall.style.backgroundImage = `url('${imageUrl}')`;
-//         BodyWall.style.backgroundSize = "cover";
-//         BodyWall.style.backgroundPosition = "center";
-//         BodyWall.style.backgroundRepeat = "no-repeat";
+//          BodyWall.style.backgroundImage = `url('${imageUrl}'`;
+//          BodyWall.style.backgroundSize = "cover";
+//          BodyWall.style.backgroundPosition = "center";
+//          BodyWall.style.backgroundRepeat = "no-repeat";
 //     } else {
 //         // fallback color if no image found
-//         document.body.style.backgroundImage = "";
-//         document.body.style.backgroundColor = "#e8b4b4";
+//         BodyWall.style.backgroundImage = "";
+//         BodyWall.style.backgroundColor = "#333";
 //     }  console.log(result);
-// /
- }
+
+//  }
 
 //fetchCountryImage('Egypt')
-
-// implementing search function 
-
-// searchInput.addEventListener('keypress', function(event) {
-//     if (event.key === 'Enter') {
-//         event.preventDefault();
-//         const country = searchInput.value.trim();
-//         if (country) {
-//             fetchCountryImage(country);
-//         }
-//     }
-// });
 
 
 const SettingCountryData = function(country,name,tempreature,desc){
@@ -213,3 +222,18 @@ const SettingCountryData = function(country,name,tempreature,desc){
             Temp.textContent = tempreature
             condition.textContent = desc
 }
+
+
+// implementing the Favorite functionality
+
+const addTofav = function(con){
+    if(fetchedCountry.includes(con)) {
+        console.log('Country already in favorites:', con);
+        return; // Prevent adding duplicates
+    }
+fetchedCountry.push(con);
+localStorage.setItem('favoriteCountries', JSON.stringify(fetchedCountry));
+const favoriteCountries = JSON.parse(localStorage.getItem('favoriteCountries')) || [];
+console.log('Favorite countries:', favoriteCountries);
+}
+fetchedCountry.pop();

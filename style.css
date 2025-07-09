@@ -9,7 +9,6 @@
     width: 100vw; /* Changed from 100vh to 100vw */
 }
 body {
-    background-color: #e8b4b4;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -25,7 +24,13 @@ body {
     top: 10%;
 }
 
-
+.flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
 
 .search-icon svg {
     width: 20px;
